@@ -1,0 +1,1 @@
+export const LOAD_MODULE = 'TOKEN_LOAD_MODULE'
