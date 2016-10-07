@@ -1,1 +1,0 @@
-export const FACTORY = '0xa76422591378d14fb6d94c9da48a42498d8b51da'
