@@ -1,4 +1,4 @@
-export { Dao } from './main'
+export { Dao, Create, LinkModule } from './main'
 export { Main as token, Action as tokenAction } from './token'
 export { Main as ambix, Action as ambixAction } from './ambix'
 export { Main as market, Action as marketAction } from './market'

@@ -4,9 +4,8 @@ import { Dao } from '../../../../shared/dao'
 
 const Main = props => (
   (<div>
-    <h4>административная панель</h4>
     {!_.isEmpty(props.dao_address) &&
-      <Dao />
+      <Dao role={props.role} />
     }
   </div>)
 )

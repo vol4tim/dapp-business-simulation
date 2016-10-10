@@ -1,5 +1,6 @@
 import { startSubmit, stopSubmit, reset } from 'redux-form';
 import _ from 'lodash';
+import { hashHistory } from 'react-router';
 import { ADD } from './actionTypes'
 import { flashMessage } from '../app/actions'
 import { addModule } from '../dao/actions'
@@ -86,6 +87,7 @@ export function submit(form, action) {
               address
             }
           })
+          hashHistory.push('/dao/link/' + action + '/' + address)
         })
         .catch(() => {
           dispatch(stopSubmit('FormCreator'))

@@ -1,9 +1,9 @@
 import { connect } from 'react-redux'
-import { Main } from '../components/create';
+import Create from '../components/create';
 
 function mapStateToProps(store, props) {
   let title
-  switch (props.params.type) {
+  switch (props.module) {
     case 'core':
       title = 'Создать ядро'
       break
@@ -22,16 +22,13 @@ function mapStateToProps(store, props) {
     case 'acl':
       title = 'Создать ACL'
       break
-    case 'module':
-      title = 'Добавить модуль в ядро'
-      break
     default:
       title = '';
   }
   return {
     title,
-    type: props.params.type
+    module: props.module
   }
 }
 
-export default connect(mapStateToProps)(Main)
+export default connect(mapStateToProps)(Create)

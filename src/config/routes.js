@@ -15,12 +15,13 @@ export const routes = store =>
       <IndexRoute component={Start} />
       <Route path="/admin" component={Admin.Page} onEnter={() => { store.dispatch(setRole('admin')) }}>
         <IndexRoute component={Admin.Main} />
-        <Route path="create/:type" component={Admin.Create} />
       </Route>
       <Route path="/user/:role" component={User.Page} onEnter={(nextState) => { store.dispatch(setRole(nextState.params.role)) }}>
         <IndexRoute component={User.Main} />
       </Route>
       <Route path="/dao" component={Dao.Page}>
+        <Route path="create/:module" component={Dao.Create} />
+        <Route path="link/:module(/:address)" component={Dao.LinkModule} />
         <Route path=":module/:address" component={Dao.Module} />
         <Route path=":module/:action/:address" component={Dao.Action} />
       </Route>
