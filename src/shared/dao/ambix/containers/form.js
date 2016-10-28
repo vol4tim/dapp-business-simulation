@@ -1,7 +1,6 @@
 import { bindActionCreators } from 'redux'
 import { reduxForm } from 'redux-form'
 import { submit } from '../../../../modules/ambix/actions'
-// import Form from '../../../../../shared/components/common/form';
 import Form from '../components/form'
 
 function mapStateToProps() {
@@ -14,7 +13,7 @@ function mapStateToProps() {
 }
 function mapDispatchToProps(dispatch, props) {
   return {
-    onSubmit: bindActionCreators(form => submit(props.ambixAddress, props.action, form), dispatch)
+    onSubmit: bindActionCreators(form => submit(props.address, props.action, form), dispatch)
   }
 }
 export default reduxForm({

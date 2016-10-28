@@ -1,129 +1,188 @@
-/* eslint no-constant-condition: 0 */
-import { startSubmit, stopSubmit, reset } from 'redux-form'
 import _ from 'lodash'
 import { LOAD_MODULE } from './actionTypes'
-import { loadAbiByName, getContract, blockchain, tx, coinbase } from '../../utils/web3'
-import { flashMessage } from '../app/actions'
+import { getContractByAbiName, loadAbiByName, getContract, coinbase } from '../../utils/web3'
+import { promiseFor } from '../../utils/helper'
+import { submit as submitContract, send as sendContract } from '../dao/actions'
 
 export function loadModule(ambixAddress) {
   return (dispatch) => {
+    let ambix
     let tokenAbi
-    loadAbiByName('TokenEmission')
-      .then((abi) => {
-        tokenAbi = abi
-        return loadAbiByName('Ambix')
+    const payload = {
+      address: ambixAddress,
+      sink: [],
+      source: []
+    }
+    getContractByAbiName('Ambix', ambixAddress)
+      .then((contract) => {
+        ambix = contract
+        return loadAbiByName('TokenEmission')
       })
       .then((abi) => {
-        const ambix = getContract(abi, ambixAddress);
-        const sink = [];
-        const source = [];
+        tokenAbi = abi
         let indexSink = 0
-        let stopSink = false
-        while (!stopSink) {
-          const address = ambix.rSink(indexSink)
-          if (address === '0x') {
-            stopSink = true
-          } else {
-            const token = getContract(tokenAbi, address);
-            let decimals = 1
-            if (token.decimals() > 0) {
-              decimals = Math.pow(10, token.decimals())
-            }
-            const owner = token.owner()
-            sink.push({
-              address,
-              name: token.name(),
-              countStr: _.toNumber(ambix.rSinkCoef(indexSink)) + ' ' + token.symbol(),
-              balanceStr: (token.balanceOf(coinbase()) / decimals) + ' ' + token.symbol(),
-              owner,
-              isOwner: (owner === ambixAddress)
+        return promiseFor(stopSink => !stopSink, () => {
+          let decimals
+          let symbol
+          let token
+          const sink = {}
+          return ambix.call('rSink', [indexSink])
+            .then((address) => {
+              if (address === '0x' || address === '0x0000000000000000000000000000000000000000') {
+                return true
+              }
+              sink.address = address
+              token = getContract(tokenAbi, address);
+              return token.call('decimals')
             })
-            indexSink += 1
-          }
-        }
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              decimals = result
+              if (decimals > 0) {
+                decimals = Math.pow(10, decimals)
+              } else {
+                decimals = 1
+              }
+              return token.call('symbol')
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              symbol = result
+              return token.call('balanceOf', [coinbase()])
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              sink.balanceStr = (_.toNumber(result) / decimals) + ' ' + symbol
+              return token.call('name')
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              sink.name = result
+              return token.call('owner')
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              sink.owner = result
+              sink.isOwner = (result === ambixAddress)
+              return ambix.call('rSinkCoef', [indexSink])
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              sink.owner = _.toNumber(result) + ' ' + symbol
+              payload.sink.push(sink)
+              indexSink += 1
+              return false
+            })
+        }, false)
+      })
+      .then(() => {
         let indexSource = 0
-        let stopSource = false
-        while (!stopSource) {
-          const address = ambix.rSource(0, indexSource)
-          if (address === '0x') {
-            stopSource = true
-          } else {
-            const token = getContract(tokenAbi, address);
-            let decimals = 1
-            if (token.decimals() > 0) {
-              decimals = Math.pow(10, token.decimals())
-            }
-            const allowance = token.allowance(coinbase(), ambixAddress)
-            const count = _.toNumber(ambix.rSourceCoef(0, indexSource))
-            source.push({
-              address,
-              name: token.name(),
-              count,
-              countStr: count + ' ' + token.symbol(),
-              balanceStr: (token.balanceOf(coinbase()) / decimals) + ' ' + token.symbol(),
-              allowanceStr: allowance + ' ' + token.symbol(),
-              isApprove: (allowance >= count)
+        return promiseFor(stopSource => !stopSource, () => {
+          let token
+          let decimals
+          let symbol
+          let allowance
+          let count
+          const source = {}
+          return ambix.call('rSource', [indexSource])
+            .then((address) => {
+              if (address === '0x' || address === '0x0000000000000000000000000000000000000000') {
+                return true
+              }
+              source.address = address
+              token = getContract(tokenAbi, address);
+              return token.call('decimals')
             })
-            indexSource += 1
-          }
-        }
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              decimals = result
+              if (decimals > 0) {
+                decimals = Math.pow(10, decimals)
+              } else {
+                decimals = 1
+              }
+              return token.call('symbol')
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              symbol = result
+              return token.call('balanceOf', [coinbase()])
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              source.balanceStr = (_.toNumber(result) / decimals) + ' ' + symbol
+              return token.call('name')
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              source.name = result
+              return token.call('allowance', [coinbase(), ambixAddress])
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              allowance = result
+              return ambix.call('rSourceCoef', [0, indexSource])
+            })
+            .then((result) => {
+              if (result === true) {
+                return true
+              }
+              count = _.toNumber(result)
+              source.count = count
+              source.countStr = count + ' ' + symbol
+              source.allowanceStr = allowance + ' ' + symbol
+              source.isApprove = (allowance >= count)
+              payload.source.push(source)
+              indexSource += 1
+              return false
+            })
+        }, false)
+      })
+      .then(() => {
         dispatch({
           type: LOAD_MODULE,
-          payload: {
-            address: ambixAddress,
-            sink,
-            source
-          }
+          payload
         })
       })
   }
 }
 
-function run(dispatch, address, func, values) {
-  return loadAbiByName('Ambix')
-    .then((abi) => {
-      const ambix = getContract(abi, address);
-      return tx(ambix, func, values)
-    })
-    .then((txId) => {
-      dispatch(flashMessage('txId: ' + txId))
-      return blockchain.subscribeTx(txId)
-    })
-    .then(transaction => transaction.blockNumber)
+export function submit(address, action, form) {
+  return (dispatch) => {
+    submitContract(dispatch, 'FormAmbix', address, 'Ambix', action, form)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
+  }
 }
 
-export function submit(ambixAddress, action, form) {
+export function send(address, action, values) {
   return (dispatch) => {
-    dispatch(startSubmit('FormAmbix'));
-    let func
-    let values
-    switch (action) {
-      case 'source':
-        func = 'setSource'
-        values = [0, _.map(form.token, 'address'), _.map(form.token, 'count')]
-        break
-      case 'sink':
-        func = 'setSink'
-        values = [_.map(form.token, 'address'), _.map(form.token, 'count')]
-        break
-      case 'run':
-        func = 'run'
-        values = form
-        break
-      default:
-        func = false;
-    }
-    if (func) {
-      run(dispatch, ambixAddress, func, values)
-        .then((blockNumber) => {
-          dispatch(stopSubmit('FormAmbix'))
-          dispatch(reset('FormAmbix'))
-          dispatch(flashMessage('blockNumber: ' + blockNumber))
-          dispatch(loadModule(ambixAddress))
-        })
-        .catch(() => {
-          dispatch(stopSubmit('FormAmbix'))
-        })
-    }
+    sendContract(dispatch, address, 'Ambix', action, values)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
   }
 }

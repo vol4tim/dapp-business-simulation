@@ -12,7 +12,8 @@ const Form = (props) => {
     placeholders,
     disableds,
     selects,
-    autocomplete
+    autocomplete,
+    output
   } = props
 
   return (
@@ -46,7 +47,9 @@ const Form = (props) => {
           </div>
         )
       })}
-
+      {output !== '' &&
+        <div><b>Результат</b>:<div dangerouslySetInnerHTML={{ __html: output }} /></div>
+      }
       <div className="form-group">
         <div className="text-center">
           <input
@@ -66,10 +69,12 @@ Form.propTypes = {
   labels: PropTypes.array.isRequired,
   placeholders: PropTypes.array,
   disableds: PropTypes.array,
-  autocomplete: PropTypes.object
+  autocomplete: PropTypes.object,
+  output: PropTypes.string
 }
 Form.defaultProps = {
-  autocomplete: {}
+  autocomplete: {},
+  output: ''
 };
 
 export default Form

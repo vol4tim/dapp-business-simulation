@@ -4,7 +4,7 @@ import { submit } from '../../../../modules/acl/actions';
 import Form from '../../../components/common/form';
 
 function mapStateToProps(state, props) {
-  if (props.action === 'group' || props.action === 'member') {
+  if (props.action === 'createGroup' || props.action === 'addMember') {
     return {
       fields: ['group', 'address'],
       selects: {},
@@ -19,7 +19,7 @@ function mapStateToProps(state, props) {
 }
 function mapDispatchToProps(dispatch, props) {
   return {
-    onSubmit: bindActionCreators(form => submit(props.aclAddress, props.action, form), dispatch)
+    onSubmit: bindActionCreators(form => submit(props.address, props.action, form), dispatch)
   }
 }
 export default reduxForm({

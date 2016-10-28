@@ -1,37 +1,62 @@
-/* eslint no-constant-condition: 0 */
-import { startSubmit, stopSubmit, reset } from 'redux-form'
-import _ from 'lodash'
+/* eslint new-cap: 0 */
 import { LOAD_MODULE } from './actionTypes'
-import { loadAbiByName, getContract, blockchain, tx } from '../../utils/web3'
-import { flashMessage } from '../app/actions'
+import { getContractByAbiName } from '../../utils/web3'
+import { submit as submitContract, send as sendContract } from '../dao/actions'
 
 export function loadModule(aclAddress) {
   return (dispatch) => {
-    loadAbiByName('ACLStorage')
-      .then((abi) => {
-        const acl = getContract(abi, aclAddress);
-        const groups = [];
+    getContractByAbiName('ACLStorage', aclAddress)
+      .then((acl) => {
         try {
-          let index = 0
-          while (true) {
-            const group = acl.group(index)
-            const members = []
-            for (
-              let address = acl.memberFirst(group);
-              address !== '0x0000000000000000000000000000000000000000';
-              address = acl.memberNext(group, address)
-            ) {
-              members.push(address)
-            }
-            groups.push({
-              name: group,
-              members
+          acl.call('group', [0])
+            .then((group) => {
+              console.log('0', group);
+              return acl.call('group', [1])
             })
-            index += 1
-          }
+            .then((group) => {
+              console.log('1', group);
+            //  return acl.call('group', [2])
+            })
+            // .then((group) => {
+            //   console.log('2', group);
+            //   return acl.call('group', [1])
+            // })
+            // .then((group) => {
+            //   console.log('11', group);
+            // })
+            // .catch((e) => {
+            //   console.log('s', e);
+            // })
+          const group = acl.get('group', [2])
+          console.log('2', group);
+            // .then((group) => {
+            //   console.log('2', group);
+            // })
         } catch (err) {
           console.log(err);
         }
+        const groups = [];
+        // try {
+        //   let index = 0
+        //   while (true) {
+        //     const group = acl.group(index)
+        //     const members = []
+        //     for (
+        //       let address = acl.memberFirst(group);
+        //       address !== '0x0000000000000000000000000000000000000000';
+        //       address = acl.memberNext(group, address)
+        //     ) {
+        //       members.push(address)
+        //     }
+        //     groups.push({
+        //       name: group,
+        //       members
+        //     })
+        //     index += 1
+        //   }
+        // } catch (err) {
+        //   console.log(err);
+        // }
         dispatch({
           type: LOAD_MODULE,
           payload: {
@@ -43,44 +68,20 @@ export function loadModule(aclAddress) {
   }
 }
 
-function run(dispatch, address, func, values) {
-  return loadAbiByName('ACLStorage')
-    .then((abi) => {
-      const acl = getContract(abi, address);
-      return tx(acl, func, values)
-    })
-    .then((txId) => {
-      dispatch(flashMessage('txId: ' + txId))
-      return blockchain.subscribeTx(txId)
-    })
-    .then(transaction => transaction.blockNumber)
+export function submit(address, action, form) {
+  return (dispatch) => {
+    submitContract(dispatch, 'FormAcl', address, 'ACLStorage', action, form)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
+  }
 }
 
-export function submit(aclAddress, action, form) {
+export function send(address, action, values) {
   return (dispatch) => {
-    dispatch(startSubmit('FormAcl'));
-    let func
-    switch (action) {
-      case 'group':
-        func = 'createGroup'
-        break
-      case 'member':
-        func = 'addMember'
-        break
-      default:
-        func = false;
-    }
-    if (func) {
-      run(dispatch, aclAddress, func, _.values(form))
-        .then((blockNumber) => {
-          dispatch(stopSubmit('FormAcl'))
-          dispatch(reset('FormAcl'))
-          dispatch(flashMessage('blockNumber: ' + blockNumber))
-          dispatch(loadModule(aclAddress))
-        })
-        .catch(() => {
-          dispatch(stopSubmit('FormAcl'))
-        })
-    }
+    sendContract(dispatch, address, 'ACLStorage', action, values)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
   }
 }

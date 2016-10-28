@@ -1,74 +1,113 @@
-import { startSubmit, stopSubmit, reset } from 'redux-form'
 import _ from 'lodash'
-import { LOAD_MODULE } from './actionTypes'
-import { loadAbiByName, getContract, blockchain, tx, coinbase } from '../../utils/web3'
-import { flashMessage } from '../app/actions'
+import { LOAD_MODULE, CALL_FUNC } from './actionTypes'
+import { getContractByAbiName, coinbase } from '../../utils/web3'
+import { submit as submitContract, send as sendContract, call as callContract } from '../dao/actions'
 
 export function loadModule(tokenAclAddress) {
   return (dispatch) => {
-    loadAbiByName('TokenEmissionACL')
-      .then((abi) => {
-        const tokenAcl = getContract(abi, tokenAclAddress);
-        let decimals = 1
-        if (tokenAcl.decimals() > 0) {
-          decimals = Math.pow(10, tokenAcl.decimals())
+    let token
+    let decimals
+    let symbol
+    const payload = {
+      address: tokenAclAddress
+    }
+    getContractByAbiName('TokenEmissionACL', tokenAclAddress)
+      .then((contract) => {
+        token = contract
+        return token.call('name')
+      })
+      .then((name) => {
+        payload.name = name
+        return token.call('emitentGroup')
+      })
+      .then((result) => {
+        payload.aclGroup = result
+        return token.call('decimals')
+      })
+      .then((result) => {
+        decimals = result
+        if (decimals > 0) {
+          decimals = Math.pow(10, decimals)
+        } else {
+          decimals = 1
         }
+        return token.call('symbol')
+      })
+      .then((result) => {
+        symbol = result
+        return token.call('balanceOf', [coinbase()])
+      })
+      .then((result) => {
+        payload.balance = (_.toNumber(result) / decimals) + ' ' + symbol
+        return token.call('totalSupply')
+      })
+      .then((result) => {
+        payload.totalSupply = (_.toNumber(result) / decimals) + ' ' + symbol
         dispatch({
           type: LOAD_MODULE,
-          payload: {
-            address: tokenAclAddress,
-            name: tokenAcl.name(),
-            totalSupply: (tokenAcl.totalSupply() / decimals) + ' ' + tokenAcl.symbol(),
-            balance: (tokenAcl.balanceOf(coinbase()) / decimals) + ' ' + tokenAcl.symbol(),
-            // acl: tokenAcl.acl.address,
-            aclGroup: tokenAcl.emitentGroup()
-          }
+          payload
         })
       })
   }
 }
 
-export function run(dispatch, address, func, values) {
-  return loadAbiByName('TokenEmissionACL')
-    .then((abi) => {
-      const tokenAcl = getContract(abi, address);
-      return tx(tokenAcl, func, values)
-    })
-    .then((txId) => {
-      dispatch(flashMessage('txId: ' + txId))
-      return blockchain.subscribeTx(txId)
-    })
-    .then(transaction => transaction.blockNumber)
+export function submit(address, action, form) {
+  return (dispatch) => {
+    submitContract(dispatch, 'FormTokenAcl', address, 'TokenEmissionACL', action, form)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
+  }
 }
 
-export function submit(tokenAclAddress, action, form) {
+export function send(address, action, values) {
   return (dispatch) => {
-    let func
-    switch (action) {
-      case 'transfer':
-        func = 'transfer'
-        break
-      case 'approve':
-        func = 'approve'
-        break
-      case 'emission':
-        func = 'emission'
-        break
-      default:
-        func = false;
-    }
-    if (func) {
-      dispatch(startSubmit('FormTokenAcl'));
-      run(dispatch, tokenAclAddress, func, _.values(form))
-        .then((blockNumber) => {
-          dispatch(stopSubmit('FormTokenAcl'))
-          dispatch(reset('FormTokenAcl'))
-          dispatch(flashMessage('blockNumber: ' + blockNumber))
-          dispatch(loadModule(tokenAclAddress))
+    sendContract(dispatch, address, 'TokenEmissionACL', action, values)
+      .then(() => {
+        dispatch(loadModule(address))
+      })
+  }
+}
+
+function normalResultCall(contract, action, output) {
+  if (action === 'balanceOf') {
+    let decimals
+    return contract.call('decimals')
+      .then((result) => {
+        decimals = result
+        return contract.call('symbol')
+      })
+      .then((symbol) => {
+        if (decimals > 0) {
+          decimals = Math.pow(10, decimals)
+        } else {
+          decimals = 1
+        }
+        return (_.toNumber(output) / decimals) + ' ' + symbol
+      })
+  }
+  return output.toString()
+}
+
+export function call(address, action, form) {
+  return (dispatch) => {
+    let contract
+    getContractByAbiName('TokenEmissionACL', address)
+      .then((result) => {
+        contract = result
+        return callContract(dispatch, 'FormTokenAclFunc', contract, action, form)
+      })
+      .then(result => normalResultCall(contract, action, result))
+      .then((result) => {
+        dispatch({
+          type: CALL_FUNC,
+          payload: {
+            address,
+            action,
+            input: form,
+            output: result
+          }
         })
-        .catch(() => {
-          dispatch(stopSubmit('FormTokenAcl'))
-        })
-    }
+      })
   }
 }

@@ -14,9 +14,15 @@ const Container = (props) => {
 }
 
 function mapStateToProps() {
+  const menu = [
+    {
+      name: 'Cоздать ДАО',
+      href: '/dao/create/core'
+    }
+  ];
   return {
     title: 'Администратор',
-    menu: []
+    menu
   }
 }
 

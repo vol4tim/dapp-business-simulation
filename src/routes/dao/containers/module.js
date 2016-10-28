@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import _ from 'lodash'
 import * as Modules from '../../../shared/dao'
 
 const Container = (props) => {
@@ -9,12 +10,8 @@ const Container = (props) => {
 }
 
 function mapStateToProps(store, props) {
-  let module = props.params.module
-  if (module === 'token-provider') {
-    module = 'tokenAcl'
-  }
   return {
-    module,
+    module: _.camelCase(props.params.module),
     address: props.params.address
   }
 }

@@ -19,14 +19,14 @@ export const routes = store =>
       <Route path="/user/:role" component={User.Page} onEnter={(nextState) => { store.dispatch(setRole(nextState.params.role)) }}>
         <IndexRoute component={User.Main} />
       </Route>
-      <Route path="/dao" component={Dao.Page}>
-        <Route path="create/:module" component={Dao.Create} />
+      <Route path="/log" component={Log.Page}>
+        <IndexRoute component={Log.Main} />
+      </Route>
+      <Route path="/dao">
+        <Route path="create/:module" component={Dao.CreateModule} />
         <Route path="link/:module(/:address)" component={Dao.LinkModule} />
         <Route path=":module/:address" component={Dao.Module} />
         <Route path=":module/:action/:address" component={Dao.Action} />
-      </Route>
-      <Route path="/log" component={Log.Page}>
-        <IndexRoute component={Log.Main} />
       </Route>
     </Route>
     <Route path="*" component={NotFound} />

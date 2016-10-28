@@ -1,15 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import _ from 'lodash'
 import { LinkModule } from '../../../shared/dao'
 
 const Container = (props) => {
-  const { module, address } = props
-  return (<LinkModule module={module} address={address} />)
+  const { daoAddress, module, address } = props
+  return (<LinkModule daoAddress={daoAddress} module={module} address={address} />)
 }
 
 function mapStateToProps(store, props) {
   return {
-    module: props.params.module,
+    module: _.camelCase(props.params.module),
+    daoAddress: store.app.dao_address,
     address: props.params.address
   }
 }

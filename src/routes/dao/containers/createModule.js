@@ -1,15 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Create } from '../../../shared/dao'
+import _ from 'lodash'
+import { CreateModule } from '../../../shared/dao'
 
 const Container = (props) => {
   const { module } = props
-  return (<Create module={module} />)
+  return (<CreateModule module={module} />)
 }
 
 function mapStateToProps(store, props) {
   return {
-    module: props.params.module
+    module: _.camelCase(props.params.module),
   }
 }
 

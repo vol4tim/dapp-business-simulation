@@ -1,6 +1,6 @@
 import { bindActionCreators } from 'redux'
 import { reduxForm } from 'redux-form'
-import { submit } from '../../../../modules/admin/actions';
+import { submitLinkModule } from '../../../../modules/dao/actions';
 import Form from '../../../../shared/components/common/form';
 
 function mapStateToProps(state, props) {
@@ -13,12 +13,8 @@ function mapStateToProps(state, props) {
           value: 'token'
         },
         {
-          name: 'Токен поставщика',
-          value: 'token-provider'
-        },
-        {
-          name: 'Ценная бумага',
-          value: 'ambix'
+          name: 'Токен ACL',
+          value: 'token-acl'
         },
         {
           name: 'Рынок',
@@ -27,22 +23,23 @@ function mapStateToProps(state, props) {
         {
           name: 'ACL',
           value: 'acl'
+        },
+        {
+          name: 'Ценная бумага',
+          value: 'ambix'
         }
       ]
     },
     initialValues: { type: props.module, address: props.address },
     labels: ['Тип модуля', 'Название', 'Адрес контракта'],
-    placeholders: [],
-    autocomplete: {
-      address: true
-    }
+    placeholders: []
   }
 }
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch, props) {
   return {
-    onSubmit: bindActionCreators(form => submit(form, 'module'), dispatch)
+    onSubmit: bindActionCreators(form => submitLinkModule(props.daoAddress, form), dispatch)
   }
 }
 export default reduxForm({
-  form: 'FormCreator'
+  form: 'FormLinkModule'
 }, mapStateToProps, mapDispatchToProps)(Form)

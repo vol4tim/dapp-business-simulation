@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import _ from 'lodash'
 import { Main } from '../components'
-import { loadModule } from '../../../../modules/acl/actions';
+import { loadModule, send } from '../../../../modules/acl/actions';
 
 class Container extends Component {
   componentWillMount() {
@@ -25,12 +25,14 @@ function mapStateToProps(store, props) {
     isModule: !_.isEmpty(module)
   }
 }
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch, props) {
   const actions = bindActionCreators({
-    loadModule
+    loadModule,
+    send
   }, dispatch)
   return {
-    loadModule: actions.loadModule
+    loadModule: actions.loadModule,
+    onRemoveMember: (group, address) => actions.send(props.address, 'removeMember', [group, address])
   }
 }
 

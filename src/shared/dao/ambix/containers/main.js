@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import _ from 'lodash'
 import { Main } from '../components'
-import { loadModule, submit } from '../../../../modules/ambix/actions';
-import { run as runToken } from '../../../../modules/token/actions';
-import { run as runTokenAcl } from '../../../../modules/tokenAcl/actions';
+import { loadModule, send } from '../../../../modules/ambix/actions';
+import { send as sendToken } from '../../../../modules/token/actions';
+import { send as sendTokenAcl } from '../../../../modules/tokenAcl/actions';
 
 class Container extends Component {
   componentWillMount() {
@@ -30,13 +30,13 @@ function mapStateToProps(store, props) {
 function mapDispatchToProps(dispatch, props) {
   const actions = bindActionCreators({
     loadModule,
-    submit
+    send
   }, dispatch)
   return {
     loadModule: actions.loadModule,
-    run: () => actions.submit(props.address, 'run', []),
-    delegate: tokenAddress => runToken(dispatch, tokenAddress, 'delegate', [props.address]),
-    approve: (tokenAddress, count) => runTokenAcl(dispatch, tokenAddress, 'approve', [props.address, count])
+    onEmission: () => actions.send(props.address, 'run', []),
+    onDelegate: tokenAddress => sendToken(tokenAddress, 'delegate', [props.address]),
+    onApprove: (tokenAddress, count) => sendTokenAcl(tokenAddress, 'approve', [props.address, count])
   }
 }
 

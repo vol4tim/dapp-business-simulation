@@ -26,7 +26,7 @@ function mapStateToProps(state, props) {
 }
 function mapDispatchToProps(dispatch, props) {
   return {
-    onSubmit: bindActionCreators(form => submit(props.tokenAddress, props.action, form), dispatch)
+    onSubmit: bindActionCreators(form => submit(props.address, props.action, form), dispatch)
   }
 }
 export default reduxForm({

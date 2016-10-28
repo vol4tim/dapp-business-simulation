@@ -14,13 +14,8 @@ const Container = (props) => {
   </Layout>)
 }
 
-function mapStateToProps(state) {
-  let back = ''
-  if (state.app.role === 'admin') {
-    back = '/admin'
-  } else {
-    back = '/user/' + state.app.role
-  }
+function mapStateToProps() {
+  const back = '/operator'
   return {
     title: 'DAO',
     menu: [],

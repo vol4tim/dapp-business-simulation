@@ -1,23 +1,12 @@
-/* eslint react/prefer-stateless-function: 0*/
-import React, { PropTypes, Component } from 'react'
+import React from 'react'
+import { Layout } from '../../main/components'
 import Form from '../containers/form'
 
-class Main extends Component {
-  render() {
-    const { title, address, action } = this.props
-
-    return (<div>
-      <h4>{title}</h4>
-      <p>
-        <button onClick={this.context.router.goBack} className="btn btn-default">Назад</button>
-      </p>
-      <Form tokenAclAddress={address} action={action} />
-    </div>)
-  }
+const Action = (props) => {
+  const { title, address, action } = props
+  return (<Layout title={title} address={address} hideBack={false}>
+    <Form address={address} action={action} />
+  </Layout>)
 }
 
-Main.contextTypes = {
-  router: PropTypes.object
-}
-
-export default Main
+export default Action

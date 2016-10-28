@@ -1,8 +1,9 @@
+/* eslint jsx-a11y/no-static-element-interactions: 0 */
 import React from 'react'
 import { Link } from 'react-router'
 
 const Block = (props) => {
-  const { name, type, modules, role } = props
+  const { name, type, modules, role, onRemoveModule } = props
 
   return (<div className="panel panel-default">
     <div className="panel-heading">
@@ -24,7 +25,7 @@ const Block = (props) => {
               </button>
               <ul className="dropdown-menu">
                 <li><Link to={'/dao/' + type + '/' + item.address}>Открыть</Link></li>
-                <li><Link to={'/dao/' + type + '/' + item.address + '/remove'}>Удалить</Link></li>
+                <li><a onClick={() => onRemoveModule(item.name)}>Удалить</a></li>
               </ul>
             </div>
             <Link to={'/dao/' + type + '/' + item.address}>

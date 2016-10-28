@@ -1,12 +1,12 @@
 import React from 'react'
-import FormLink from '../containers/formLink'
+import { Layout } from './index'
+import FormLinkModule from '../containers/formLinkModule'
 
 const LinkModule = (props) => {
-  const { title, module, address } = props
-  return (<div>
-    <h4>{title}</h4>
-    <FormLink module={module} address={address} />
-  </div>)
+  const { title, daoAddress, module, address } = props
+  return (<Layout title={title} hideBack={false}>
+    <FormLinkModule daoAddress={daoAddress} module={module} address={address} />
+  </Layout>)
 }
 
 export default LinkModule
