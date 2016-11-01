@@ -13,6 +13,9 @@ class Container extends Component {
     }
   }
   render() {
+    if (_.isEmpty(this.props.address)) {
+      return <p>не выбрано dao</p>
+    }
     if (this.props.isLoad) {
       return <Dao {...this.props} />
     }
